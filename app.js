@@ -5,13 +5,14 @@ import axios from './axios.js'
 import { v4 as uuidv4 } from 'uuid'
 
 const app = express()
+
 const PORT = process.env.PORT || 9000
 
 // TODO: create orders model
 const productSchema = new mongoose.Schema({
-    image: { type: String },
-    name: { type: String },
-    price: { type: Number },
+    name: { type: String, required: true },
+    image: { type: String, required: true },
+    price: { type: Number, required: true },
 })
 
 const Product = mongoose.model('Product', productSchema)
@@ -29,6 +30,17 @@ async function connect_db() {
 }
 
 app.use(express.json())
+
+// app.post('/api/products', async (req, res) => {
+//     try {
+//         const data = req.body
+//         const product = await Product.create({ ...data })
+//         res.status(200).json(product)
+//     } catch (error) {
+//         console.error(`An error occured. ${error}`)
+//         return res.status(500).json({ msg: 'Internal Server Error' })
+//     }
+// })
 
 app.get('/api/products', async (_req, res) => {
     try {
@@ -60,7 +72,8 @@ app.post('/api/checkout', async (req, res) => {
             }
         })
         const results = response.data
-        res.json({ url: results.data.checkout_url })
+        // TODO: create order in db once payment is initiated
+        res.status(200).res.json({ url: results.data.checkout_url })
     } catch (error) {
         console.error(`An error occured. ${error}`);
         return res.status(500).json({ msg: 'Internal Server Error' })
@@ -76,10 +89,8 @@ app.get('/api/verify/:tx_ref', async (req, res) => {
                 Authorization: `Bearer ${process.env.PAYCHANGU_SECRET_KEY}`
             }
         })
+        // TODO: update order status to paid after verifying payment
         res.json(response.data)
-        if (response.data) {
-            // do stuff here, update order in db, etc
-        }
     } catch (error) {
         console.error(`An error occured. ${error}`);
         return res.status(500).json({ msg: 'Internal Server Error' })
