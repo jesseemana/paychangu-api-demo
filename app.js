@@ -32,70 +32,56 @@ async function connect_db() {
 app.use(express.json())
 
 // app.post('/api/products', async (req, res) => {
-//     try {
-//         const data = req.body
-//         const product = await Product.create({ ...data })
-//         res.status(200).json(product)
-//     } catch (error) {
-//         console.error(`An error occured. ${error}`)
-//         return res.status(500).json({ msg: 'Internal Server Error' })
-//     }
+//     const data = req.body
+//     const product = await Product.create({ ...data })
+//     res.status(200).json(product)
 // })
 
 app.get('/api/products', async (_req, res) => {
-    try {
-        const products = await Product.find({})
-        res.status(200).json(products)
-    } catch (error) {
-        console.error(`An error occured. ${error}`)
-        return res.status(500).json({ msg: 'Internal Server Error' })
-    }
+    const products = await Product.find({})
+    res.status(200).json(products)
 })
 
 app.post('/api/checkout', async (req, res) => {
-    try {
-        const payload = {
-            ...req.body,
-            customization: { 
-                title: 'Online Purchase', 
-                description: 'Purchase from website', 
-            },
-            tx_ref: uuidv4(),
-            callback_url: process.env.CALLBACK_URL,
-            return_url: process.env.RETURN_URL,
-        }
-        const response = await axios.post('/payment', JSON.stringify(payload), {
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${process.env.PAYCHANGU_SECRET_KEY}`,
-            }
-        })
-        const results = response.data
-        // TODO: create order in db once payment is initiated
-        res.status(200).res.json({ url: results.data.checkout_url })
-    } catch (error) {
-        console.error(`An error occured. ${error}`);
-        return res.status(500).json({ msg: 'Internal Server Error' })
+    const payload = {
+        ...req.body,
+        customization: { 
+            title: 'Online Purchase', 
+            description: 'Purchase from website', 
+        },
+        currency: 'MWK',
+        tx_ref: uuidv4(),
+        callback_url: process.env.CALLBACK_URL,
+        return_url: process.env.RETURN_URL,
     }
+    const response = await axios.post('/payment', JSON.stringify(payload), {
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${process.env.PAYCHANGU_SECRET_KEY}`,
+        }
+    })
+    const results = response.data
+    // TODO: create order in db once payment has been initiated
+    res.status(200).json({ url: results.data.checkout_url })
 })
 
 app.get('/api/verify/:tx_ref', async (req, res) => {
-    try {
-        const { tx_ref } = req.params
-        const response = await axios.get(`/verify-payment/${tx_ref}`, {
-            headers: {
-                Accept: application/json,
-                Authorization: `Bearer ${process.env.PAYCHANGU_SECRET_KEY}`
-            }
-        })
-        // TODO: update order status to paid after verifying payment
-        res.json(response.data)
-    } catch (error) {
-        console.error(`An error occured. ${error}`);
-        return res.status(500).json({ msg: 'Internal Server Error' })
-    }
+    const { tx_ref } = req.params
+    const response = await axios.get(`/verify-payment/${tx_ref}`, {
+        headers: {
+            Accept: application/json,
+            Authorization: `Bearer ${process.env.PAYCHANGU_SECRET_KEY}`
+        }
+    })
+    // TODO: update order status to paid after verifying payment
+    res.json(response.data)
 })
+
+app.use((err, req, res, next) => {
+    console.error(`An error occured. ${err}`);
+    return res.status(500).json({ msg: 'Internal Server Error' });
+});
 
 async function main() {
     connect_db()
