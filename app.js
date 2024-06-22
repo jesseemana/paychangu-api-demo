@@ -2,6 +2,7 @@ import 'dotenv/config'
 import express from 'express'
 import mongoose from 'mongoose'
 import axios from './axios.js'
+import cors from 'cors'
 import { v4 as uuidv4 } from 'uuid'
 
 const app = express()
@@ -29,6 +30,7 @@ async function connect_db() {
     }
 }
 
+app.use(cors())
 app.use(express.json())
 
 app.get('/health', (_req, res) => res.status(200).json({ msg: 'Health OK' }))
