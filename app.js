@@ -16,9 +16,12 @@ const productSchema = new mongoose.Schema({
 
 const Product = mongoose.model('Product', productSchema)
 
-async function connectdb() {
+async function connect_db() {
     try {
-        await mongoose.connect(process.env.CONNECTION_STRING, { dbName: 'store' })
+        await mongoose.connect(
+            process.env.CONNECTION_STRING, 
+            { dbName: 'store' }
+        )
         console.log('Database connected.')
     } catch (error) {
         console.error(`Failed to connect database. ${error}`)
@@ -32,7 +35,7 @@ app.get('/api/products', async (_req, res) => {
         const products = await Product.find({})
         res.status(200).json(products)
     } catch (error) {
-        console.error(`An error occured ${error}`)
+        console.error(`An error occured. ${error}`)
         return res.status(500).json({ msg: 'Internal Server Error' })
     }
 })
@@ -49,7 +52,7 @@ app.post('/api/checkout', async (req, res) => {
             callback_url: process.env.CALLBACK_URL,
             return_url: process.env.RETURN_URL,
         }
-        const response = await axios.post(`/payment`, JSON.stringify(payload), {
+        const response = await axios.post('/payment', JSON.stringify(payload), {
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
@@ -57,16 +60,16 @@ app.post('/api/checkout', async (req, res) => {
             }
         })
         const results = response.data
-        res.json(results.data.checkout_url)
+        res.json({ url: results.data.checkout_url })
     } catch (error) {
         console.error(`An error occured. ${error}`);
         return res.status(500).json({ msg: 'Internal Server Error' })
     }
 })
 
-app.get('/api/verify/:ref', async (req, res) => {
-    const tx_ref = req.params.ref
+app.get('/api/verify/:tx_ref', async (req, res) => {
     try {
+        const { tx_ref } = req.params
         const response = await axios.get(`/verify-payment/${tx_ref}`, {
             headers: {
                 Accept: application/json,
@@ -84,8 +87,10 @@ app.get('/api/verify/:ref', async (req, res) => {
 })
 
 async function main() {
-    connectdb()
-    app.listen(PORT, () => console.log(`server running on http://localhost:${PORT}`))
+    connect_db()
+    app.listen(PORT, () => {
+        console.log(`server running on http://localhost:${PORT}`)
+    })
 }
 
 main()
