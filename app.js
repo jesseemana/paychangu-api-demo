@@ -31,6 +31,8 @@ async function connect_db() {
 
 app.use(express.json())
 
+app.get('/health', (_req, res) => res.status(200).json({ msg: 'Health OK' }))
+
 app.get('/api/products', async (_req, res) => {
     const products = await Product.find({})
     res.status(200).json(products)
