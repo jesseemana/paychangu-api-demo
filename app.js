@@ -73,12 +73,15 @@ app.get('/api/verify/:tx_ref', async (req, res) => {
     const { tx_ref } = req.params
     const response = await axios.get(`/verify-payment/${tx_ref}`, {
         headers: {
-            Accept: application/json,
+            Accept: 'application/json',
             Authorization: `Bearer ${process.env.PAYCHANGU_SECRET_KEY}`
         }
     })
-    // TODO: update order status to paid after verifying payment
-    res.json(response.data)
+    if (response.data.status === 'success') { 
+        // TODO: update order status to paid after verifying successful payment
+        return res.status(200).json({ msg: 'Payment received' })
+    }
+    res.status(400).json({ msg: 'Payment not received' })
 })
 
 app.use((err, req, res, next) => {
