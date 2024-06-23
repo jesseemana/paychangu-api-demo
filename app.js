@@ -40,9 +40,14 @@ app.get('/api/products', async (_req, res) => {
     res.status(200).json(products)
 })
 
+// TODO: sanitize incoming data 
 app.post('/api/checkout', async (req, res) => {
+    const { first_name, last_name, email, amount } = req.body
     const payload = {
-        ...req.body,
+        amount,
+        email,
+        first_name,
+        last_name,
         customization: { 
             title: 'Online Purchase', 
             description: 'Purchase from website', 
