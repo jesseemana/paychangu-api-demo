@@ -69,7 +69,7 @@ app.post('/api/checkout', async (req, res) => {
     const results = response.data
     // TODO: create order in db once payment has been initiated
     res.status(200).json({ 
-        tx_ref,
+        tx_ref: payload.tx_ref,
         url: results.data.checkout_url
     })
 })
