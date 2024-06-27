@@ -75,8 +75,7 @@ app.post('/api/checkout', async (req, res) => {
 })
 
 app.get('/api/verify/:tx_ref', async (req, res) => {
-    const { tx_ref } = req.params
-    const response = await axios.get(`/verify-payment/${tx_ref}`, {
+    const response = await axios.get(`/verify-payment/${req.params.tx_ref}`, {
         headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${process.env.PAYCHANGU_SECRET_KEY}`
