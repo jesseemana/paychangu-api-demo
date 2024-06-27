@@ -3,6 +3,7 @@ import express from 'express'
 import mongoose from 'mongoose'
 import axios from './axios.js'
 import cors from 'cors'
+import helmet from 'helmet'
 import { v4 as uuidv4 } from 'uuid'
 
 const app = express()
@@ -31,6 +32,7 @@ async function connect_db() {
 }
 
 app.use(cors())
+app.use(helmet())
 app.use(express.json())
 
 app.get('/health', (_req, res) => res.status(200).json({ msg: 'Health OK' }))
@@ -65,8 +67,11 @@ app.post('/api/checkout', async (req, res) => {
         }
     })
     const results = response.data
-    // TODO: create order in db once payment has been initialised
-    res.status(200).json({ url: results.data.checkout_url })
+    // TODO: create order in db once payment has been initiated
+    res.status(200).json({ 
+        tx_ref,
+        url: results.data.checkout_url
+    })
 })
 
 app.get('/api/verify/:tx_ref', async (req, res) => {
