@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 const app = express()
 
-const PORT = process.env.PORT || 9000
+const PORT = parseInt(process.env.PORT) || 9000
 
 // TODO: create orders model
 const productSchema = new mongoose.Schema({
@@ -56,8 +56,8 @@ app.post('/api/checkout', async (req, res) => {
         },
         currency: 'MWK',
         tx_ref: uuidv4(),
-        callback_url: process.env.CALLBACK_URL,
         return_url: process.env.RETURN_URL,
+        callback_url: process.env.CALLBACK_URL,
     }
     const response = await axios.post('/payment', JSON.stringify(payload), {
         headers: {
