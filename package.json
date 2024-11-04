@@ -1,12 +1,12 @@
 {
-  "name": "Payment demo",
+  "name": "Paychangu Integration Demo",
   "version": "1.0.0",
-  "description": "quick demo for simple online payment processing",
+  "description": "Quick demo for simple online payment processing.",
   "type": "module",
-  "main": "app.js",
+  "main": "src/app.js",
   "scripts": {
-    "dev": "nodemon app.js",
-    "start": "node app.js"
+    "dev": "nodemon src/app.js",
+    "start": "node src/app.js"
   },
   "keywords": [],
   "author": "Jesse Emana",

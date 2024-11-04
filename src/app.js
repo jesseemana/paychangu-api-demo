@@ -1,55 +1,42 @@
 import 'dotenv/config'
 import express from 'express'
-import mongoose from 'mongoose'
-import axios from './axios.js'
 import cors from 'cors'
 import helmet from 'helmet'
+import axios from './axios.js'
 import { v4 as uuidv4 } from 'uuid'
+import { Product, connect_db } from './database.js'
 
 const app = express()
 
 const PORT = parseInt(process.env.PORT) || 9000
 
-// TODO: create orders model
-const productSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    image: { type: String, required: true },
-    price: { type: Number, required: true },
-})
-
-const Product = mongoose.model('Product', productSchema)
-
-async function connect_db() {
-    try {
-        await mongoose.connect(
-            process.env.CONNECTION_STRING, 
-            { dbName: 'store' }
-        )
-        console.log('Database connected.')
-    } catch (error) {
-        console.error(`Failed to connect database. ${error}`)
-    }
-}
-
+// Middleware 
 app.use(cors())
 app.use(helmet())
 app.use(express.json())
 
-app.get('/health', (_req, res) => res.status(200).json({ msg: 'Health OK' }))
+// Check Application Health 
+app.get('/health', (_req, res) => {
+    res.status(200).json({ msg: 'Health OK' })
+})
 
+// Get All Products From DB 
 app.get('/api/products', async (_req, res) => {
     const products = await Product.find({})
     res.status(200).json(products)
 })
 
+// Initiate Payment On Paychangu 
 // TODO: sanitize incoming data 
 app.post('/api/checkout', async (req, res) => {
     const { first_name, last_name, email, amount } = req.body
+
+    // Create payload to be sent to the API 
     const payload = {
-        amount,
-        email,
         first_name,
         last_name,
+        amount,
+        email,
         customization: { 
             title: 'Online Purchase', 
             description: 'Purchase from website', 
@@ -59,6 +46,8 @@ app.post('/api/checkout', async (req, res) => {
         return_url: process.env.RETURN_URL,
         callback_url: process.env.CALLBACK_URL,
     }
+
+    // Send payment request to Paychangu API 
     const response = await axios.post('/payment', JSON.stringify(payload), {
         headers: {
             Accept: 'application/json',
@@ -74,6 +63,7 @@ app.post('/api/checkout', async (req, res) => {
     })
 })
 
+// Verify Your Payment 
 app.get('/api/verify/:tx_ref', async (req, res) => {
     const response = await axios.get(`/verify-payment/${req.params.tx_ref}`, {
         headers: {
@@ -88,15 +78,17 @@ app.get('/api/verify/:tx_ref', async (req, res) => {
     res.status(400).json({ msg: 'Payment not received' })
 })
 
+// Asynchronous Error handling Middleware 
 app.use((err, req, res, next) => {
-    console.error(`An error occured. ${err}`);
+    console.error('An error occurred.', err);
     return res.status(500).json({ msg: 'Internal Server Error' });
 });
 
+// Main function starting the app 
 async function main() {
     connect_db()
     app.listen(PORT, () => {
-        console.log(`server running on http://localhost:${PORT}`)
+        console.log(`Server running on http://localhost:${PORT}`)
     })
 }
 
