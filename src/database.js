@@ -3,8 +3,7 @@ import mongoose from 'mongoose'
 // Connecting to database 
 export async function connect_db() {
     try {
-        await mongoose.connect(
-            process.env.CONNECTION_STRING, 
+        await mongoose.connect(process.env.CONNECTION_STRING, 
             { dbName: 'store' }
         )
         console.log('Database connected.')
@@ -13,12 +12,12 @@ export async function connect_db() {
     }
 }
 
-// Products schema 
+// Setup Products schema 
 const productSchema = new mongoose.Schema({
     name: { type: String, required: true },
     image: { type: String, required: true },
     price: { type: Number, required: true },
 })
 
-// Products Model 
+// Create Products Model 
 export const Product = mongoose.model('Product', productSchema)
